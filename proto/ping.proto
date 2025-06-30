@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ping;
+
+service PingService {
+  rpc Ping(PingRequest) returns (PingResponse);
+  rpc GetRandomNumber(RandomRequest) returns (RandomResponse);
+
+  // Future KV store methods
+  // rpc Get(GetRequest) returns (GetResponse);
+  // rpc Put(PutRequest) returns (PutResponse);
+  // rpc Delete(DeleteRequest) returns (DeleteResponse);
+  
+  // Replication protocol methods (for your custom implementation)
+  // rpc Replicate(ReplicationRequest) returns (ReplicationResponse);
+  // rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  // rpc SyncLogs(SyncRequest) returns (SyncResponse);
+}
+
+message PingRequest {
+  string message = 1;
+  int64 timestamp = 2;
+  string client_id = 3;
+}
+
+message PingResponse {
+  string message = 1;
+  int64 server_timestamp = 2;
+  string server_id = 3;
+}
+
+message RandomRequest {
+  int32 min = 1;
+  int32 max = 2;
+  string request_id = 3;
+}
+
+message RandomResponse {
+  int32 number = 1;
+  int64 timestamp = 2;
+  string request_id = 3;
+}
