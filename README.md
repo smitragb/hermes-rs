@@ -1,2 +1,2 @@
 # hermes-rs
-An attempt to build Hermes Replication with sqlite3 and gRPC in Rust
+An attempt to build Hermes Replication with an in-memory KV store and gRPC in Rust
