@@ -5,6 +5,8 @@ mod hermes_server;
 use hermes_server::hermes::hermes_service_server::HermesServiceServer;
 use hermes_server::HermesServer;
 
+mod storage;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing

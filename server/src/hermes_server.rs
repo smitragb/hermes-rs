@@ -1,5 +1,9 @@
+use std::{collections::HashMap, sync::Arc};
+
+use tokio::sync::RwLock;
 use tonic::{Request, Response, Status};
 use tracing::info;
+use crate::storage::KVStore;
 
 pub mod hermes {
     tonic::include_proto!("hermes");
@@ -13,12 +17,14 @@ use hermes::{
 #[derive(Default, Debug)]
 pub struct HermesServer {
     server_id: String,
+    store: KVStore,
 }
 
 impl HermesServer {
     pub fn new(id: i32) -> Self {
         Self {
-            server_id: format!("server-{}", id),
+            server_id: format!("Server-{}", id),
+            store: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -32,15 +38,17 @@ impl HermesService for HermesServer {
         let req = request.into_inner();
 
         info! (
-            "Server-{}: Read request received from {} for key-{}",
+            "{}: Read request received from {} for key-{}",
             self.server_id, req.client_id, req.key
         );
-        
-        let value = "Hello World".to_string();
 
-        let resp = ReadResponse { value };
-
-        Ok(Response::new(resp))
+        let map = self.store.read().await;
+        match map.get(&req.key) {
+            Some(val) => Ok(Response::new(ReadResponse {
+                value: val.clone(),
+            })),
+            None => Err(Status::not_found(format!("Key '{}' not found", req.key))),
+        }
     }
 
     async fn write (
@@ -50,9 +58,11 @@ impl HermesService for HermesServer {
         let  req = request.into_inner();
 
         info! (
-            "Server-{}: Write request received from client-{}: (Key: {}, Value: {})",
+            "{}: Write request received from {}: (Key: {}, Value: {})",
              self.server_id, req.client_id, req.key, req.value
         );
+
+        self.store.write().await.insert(req.key, req.value);
 
         Ok(Response::new(WriteResponse{}))
     }
