@@ -13,7 +13,8 @@ message ReadRequest {
 }
 
 message ReadResponse {
-  string value = 2;
+  string value = 1;
+  bool stale = 2;
 }
 
 message WriteRequest {

@@ -12,8 +12,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     tracing_subscriber::fmt::init();
 
-    let addr = "[::1]:50052".parse()?;
-    let hermes_server = HermesServer::new(1);
+    let server_id = 1;
+    let addr: std::net::SocketAddr = "[::1]:50052".parse()?;
+    let hermes_server = HermesServer::new(server_id, addr.to_string());
 
     info!("Starting gRPC server on {}", addr);
 
