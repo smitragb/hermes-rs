@@ -134,15 +134,19 @@ impl HermesService for HermesServer {
             "[n{}]: Read request received from {} for key-{}",
             self.node_id, req.client_id, req.key
         );
-        
-        let map = self.store.read().await; 
-        match map.get(&req.key) {
-            Some(shared_val) => {
-                info! ("Found Key: '{}'", req.key);
+       
+        let shared_val = {
+            let map = self.store.read().await;
+            map.get(&req.key).cloned()
+        };
+
+        match shared_val {
+            Some(ref val) => {
+                info! ("[n{}] Found Key: '{}'", self.node_id, req.key);
                 let stale = !HermesValue::wait_till_valid_or_timeout(
-                    shared_val, self.replay_timeout as u64
+                    val, self.replay_timeout as u64
                 ).await;
-                let value = shared_val.read().await.get_value();
+                let value = val.read().await.get_value();
                 Ok (Response::new (ReadResponse {
                     value,
                     stale
@@ -176,7 +180,8 @@ impl HermesService for HermesServer {
             Some(val) => val,
             None => {
                 let mut write_lock = self.store.write().await;
-                write_lock.entry(key.clone())
+                write_lock
+                    .entry(key.clone())
                     .or_insert(
                         Arc::new(RwLock::new(HermesValue::new(key.clone(), value.clone(), self.node_id)))
                     )

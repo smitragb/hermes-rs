@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client.write(write_req).await?;
     }
 
-    channel = Channel::from_static("http://[::1]:50052")
+    channel = Channel::from_static("http://[::1]:50053")
         .connect()
         .await?;
 

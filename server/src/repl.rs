@@ -22,7 +22,7 @@ impl ReplicationService for HermesServer {
         request: Request<ValidateRequest>
     ) -> Result<Response<Ack>, Status> {
         let req = request.into_inner();
-        let key = req.key.clone();
+        let key = req.key;
         let curr_ts = TimeStamp::new(req.local_ts, req.node_id);
         let node_id = self.get_node();
        
@@ -51,8 +51,8 @@ impl ReplicationService for HermesServer {
         request: Request<InvalidateRequest>
     ) -> Result<Response<InvalidateResponse>, Status> {
         let req = request.into_inner();
-        let key = req.key.clone();
-        let value = req.value.clone();
+        let key = req.key;
+        let value = req.value;
         let node_id = self.get_node();
         let curr_ts = TimeStamp::new(req.local_ts, req.node_id);
         let mut resp = Response::new(InvalidateResponse {
@@ -60,7 +60,7 @@ impl ReplicationService for HermesServer {
             responder: node_id as u32,
         });
 
-        info!("[n{}] Received Invalidate RPC from {} for key {}", node_id, req.node_id, req.key.clone());
+        info!("[n{}] Received Invalidate RPC from {} for key {}", node_id, req.node_id, key.clone());
         let shared_val = {
             let map = self.store.read().await;
             map.get(&key).cloned()
@@ -76,7 +76,7 @@ impl ReplicationService for HermesServer {
                 if curr_ts < val_ts {
                     info!(
                         "[n{}] Rejecting write for key: {} since current timestamp is lower",
-                        node_id, req.key
+                        node_id, key.clone()
                     );
                     resp.get_mut().accept = false;
                 } else {
@@ -84,7 +84,7 @@ impl ReplicationService for HermesServer {
                         let mut guard = val.write().await;
                         guard.fol_invalidate(value, curr_ts);
                     }
-                    info!("[n{}] accepting write for key: {}", node_id, req.key);
+                    info!("[n{}] accepting write for key: {}", node_id, key.clone());
                 }
 
             },
