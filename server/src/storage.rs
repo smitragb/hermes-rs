@@ -32,8 +32,21 @@ impl State {
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct TimeStamp {
-    logical_time: u16,
-    node_id: u16,
+    logical_time: u32,
+    node_id: u32,
+}
+
+impl TimeStamp {
+    pub fn new(logical_time: u32, node_id: u32) -> Self {
+        Self {
+            logical_time,
+            node_id,
+        }
+    }
+
+    pub fn get_logical_time(&self) -> u32 {
+        self.logical_time
+    }
 }
 
 impl PartialEq for TimeStamp {
@@ -82,7 +95,7 @@ impl HermesValue {
             stall_notify: Arc::new(Notify::new()),
             timestamp: TimeStamp {
                 logical_time: 0,
-                node_id,
+                node_id: node_id as u32,
             },
             state: AtomicU8::new(State::VALID as u8),
         }
@@ -145,7 +158,7 @@ impl HermesValue {
             std::sync::atomic::Ordering::SeqCst
         ) {
             self.timestamp.logical_time += 1;
-            self.timestamp.node_id = node_id;
+            self.timestamp.node_id = node_id as u32;
             self.value = new_value;
         }
     }

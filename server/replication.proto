@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package replication;
+
+service ReplicationService {
+  rpc Invalidate (InvalidateRequest) returns (InvalidateResponse);
+  rpc Validate (ValidateRequest) returns (Ack);
+}
+
+message InvalidateRequest {
+  string key = 1;
+  string value = 2;
+  uint32 local_ts = 3;
+  uint32 node_id = 4;
+}
+
+message InvalidateResponse {
+  bool accept = 1;
+  uint32 responder = 2;
+}
+
+message ValidateRequest {
+  string key = 1;
+  uint32 local_ts = 2;
+  uint32 node_id = 3;
+}
+
+message Ack {}
